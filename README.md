@@ -9,11 +9,16 @@ Prototipo sencillo de marketplace de artículos de segunda mano. React + TypeScr
 - Favoritos.
 - Tema claro y oscuro automático.
 
-## Uso
+## Abrir sin instalar nada
+Abre `dist/index.html` con doble clic: es un único archivo autocontenido y funciona sin servidor.
+
+> No abras el `index.html` de la raíz: es el de desarrollo y solo funciona con `npm run dev`.
+
+## Desarrollo
 ```bash
 npm install
 npm run dev     # desarrollo
-npm run build   # comprobación de tipos + build
+npm run build   # comprueba tipos y regenera dist/index.html
 ```
 
 ## Siguientes fases
