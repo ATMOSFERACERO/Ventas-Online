@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual de conexión con aplicaciones de flujos</title>
+<style>
+:root{
+  --bg:#f5f7fb; --card:#ffffff; --ink:#1b2437; --muted:#5b6780; --line:#dfe4ee;
+  --n8n:#ea4b71; --flux:#7c3aed; --pa:#0f6cbd; --cs:#0a9a8a; --gen:#f59e0b;
+  --code-bg:#0f172a; --code-ink:#e2e8f0;
+  --c-com:#7f8ea8; --c-str:#a5e075; --c-key:#7dd3fc; --c-num:#fbbf24; --c-kw:#f472b6; --c-cmd:#fcd34d; --c-flag:#c4b5fd; --c-var:#fb923c; --c-http:#34d399;
+  --tip:#16a34a; --warn:#d97706; --danger:#dc2626; --info:#2563eb; --nover:#7c3aed;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0b1020; --card:#131b30; --ink:#e8edf8; --muted:#9aa6c0; --line:#26314d; --code-bg:#070b16; }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+a{color:var(--pa)}
+.wrap{max-width:980px;margin:0 auto;padding:0 22px}
+
+/* ───────── Portada ───────── */
+.cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;color:#fff;
+  background:radial-gradient(1200px 600px at 85% -10%,#ea4b71 0,transparent 60%),
+             radial-gradient(900px 600px at -10% 110%,#0a9a8a 0,transparent 55%),
+             linear-gradient(135deg,#1e1b4b,#312e81 45%,#0f6cbd)}
+.cover .wrap{padding-top:60px;padding-bottom:60px}
+.cover .kicker{letter-spacing:.25em;text-transform:uppercase;font-size:.85rem;opacity:.85}
+.cover h1{font-size:clamp(2.2rem,6vw,3.8rem);line-height:1.08;margin:.4em 0 .3em;font-weight:800}
+.cover p.sub{font-size:1.25rem;max-width:660px;opacity:.95;margin:0 0 2rem}
+.cover .chips{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 2.4rem}
+.chip{display:inline-block;padding:.35em .9em;border-radius:999px;font-weight:700;font-size:.9rem;color:#fff}
+.chip.n8n{background:var(--n8n)} .chip.flux{background:var(--flux)} .chip.pa{background:var(--pa)} .chip.cs{background:var(--cs)} .chip.gen{background:var(--gen);color:#1b2437}
+.cover .meta{font-size:.95rem;opacity:.85;border-top:1px solid rgba(255,255,255,.3);padding-top:1rem;display:flex;gap:2rem;flex-wrap:wrap}
+
+/* ───────── Índice ───────── */
+.toc{padding:60px 0 20px}
+.toc h2{font-size:2rem;margin:0 0 .3em}
+.toc ol{list-style:none;margin:0;padding:0;columns:2;column-gap:36px}
+.toc li{break-inside:avoid;margin:0 0 .35rem}
+.toc li.top{margin-top:.9rem;font-weight:700}
+.toc li.top:first-child{margin-top:0}
+.toc li.sub{margin-left:1.4rem;font-weight:400;font-size:.95rem}
+.toc a{text-decoration:none}
+.toc a:hover{text-decoration:underline}
+.dot{display:inline-block;width:.7em;height:.7em;border-radius:50%;margin-right:.5em}
+@media(max-width:720px){.toc ol{columns:1}}
+
+/* ───────── Secciones ───────── */
+section.sec{padding:56px 0 8px;border-top:6px solid var(--accent,var(--line));margin-top:48px}
+section.sec>.wrap>h2{font-size:2rem;margin:0 0 .2em;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+section.sec>.wrap>h2 .num{background:var(--accent,var(--ink));color:#fff;border-radius:10px;padding:.05em .55em;font-size:1.4rem}
+.lead{font-size:1.1rem;color:var(--muted);margin-top:0}
+h3{font-size:1.4rem;margin:2.2rem 0 .4rem;padding-left:.7rem;border-left:5px solid var(--accent,var(--ink))}
+h4{font-size:1.1rem;margin:1.6rem 0 .3rem;color:var(--accent,var(--ink))}
+.s-gen{--accent:var(--gen)} .s-n8n{--accent:var(--n8n)} .s-flux{--accent:var(--flux)} .s-pa{--accent:var(--pa)} .s-cs{--accent:var(--cs)} .s-sec{--accent:var(--danger)} .s-fast{--accent:#16a34a} .s-gl{--accent:#475569}
+
+/* ───────── Tarjetas, avisos y tablas ───────── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:16px 0}
+.grid .card{margin:0;border-top:5px solid var(--accent,var(--line))}
+.callout{border-left:6px solid var(--k);background:color-mix(in srgb,var(--k) 11%,var(--card));border-radius:10px;padding:12px 16px;margin:16px 0}
+.callout b.t{display:block;color:var(--k);text-transform:uppercase;letter-spacing:.06em;font-size:.8rem;margin-bottom:.15rem}
+.callout.tip{--k:var(--tip)} .callout.warn{--k:var(--warn)} .callout.danger{--k:var(--danger)} .callout.info{--k:var(--info)} .callout.nover{--k:var(--nover)}
+.callout p{margin:.2rem 0}
+table{border-collapse:collapse;width:100%;margin:16px 0;background:var(--card);border-radius:10px;overflow:hidden;font-size:.95rem}
+th,td{padding:9px 12px;border:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:color-mix(in srgb,var(--accent,#64748b) 18%,var(--card))}
+.tablewrap{overflow-x:auto}
+ol.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0}
+ol.steps>li{counter-increment:s;position:relative;padding:4px 0 10px 52px;min-height:40px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;background:var(--accent,var(--ink));color:#fff;font-weight:800;display:grid;place-items:center}
+kbd,code.i{background:color-mix(in srgb,var(--accent,#64748b) 14%,var(--card));border:1px solid var(--line);border-radius:6px;padding:.05em .4em;font-family:Consolas,"Cascadia Mono",monospace;font-size:.88em}
+.badge{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:.15em .6em;border-radius:6px;color:#fff;vertical-align:middle}
+.badge.ok{background:var(--tip)} .badge.nover{background:var(--nover)} .badge.plan{background:var(--warn)}
+
+/* ───────── Código con color ───────── */
+.codebox{margin:16px 0;border-radius:12px;overflow:hidden;background:var(--code-bg);border:1px solid #1e293b}
+.codebar{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:#111a30;color:#94a3b8;font:600 .78rem Consolas,monospace;letter-spacing:.04em}
+.codebar .lang{text-transform:uppercase;color:var(--c-key)}
+.codebar button{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:2px 10px;font:600 .75rem system-ui;cursor:pointer}
+.codebar button:hover{background:#334155}
+pre.code{margin:0;padding:14px 16px;color:var(--code-ink);overflow-x:auto;font:.9rem/1.55 Consolas,"Cascadia Mono","Fira Code",monospace;tab-size:2}
+pre.code .com{color:var(--c-com);font-style:italic}
+pre.code .str{color:var(--c-str)} pre.code .key{color:var(--c-key)} pre.code .num{color:var(--c-num)}
+pre.code .kw{color:var(--c-kw);font-weight:700} pre.code .cmd{color:var(--c-cmd);font-weight:700}
+pre.code .flag{color:var(--c-flag)} pre.code .var{color:var(--c-var)} pre.code .http{color:var(--c-http);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.88rem;color:var(--muted);margin:8px 0 0}
+.legend span::before{content:"■ ";}
+.legend .l1::before{color:var(--c-key)} .legend .l2::before{color:var(--c-str)} .legend .l3::before{color:var(--c-num)} .legend .l4::before{color:var(--c-com)} .legend .l5::before{color:var(--c-cmd)}
+
+figure.diagram{margin:18px 0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+figure.diagram svg{max-width:100%;height:auto}
+figure.diagram figcaption{color:var(--muted);font-size:.9rem;margin-top:6px}
+dl.gloss{margin:0}
+dl.gloss dt{font-weight:800;margin-top:1rem;color:var(--ink)}
+dl.gloss dd{margin:.1rem 0 0 0;color:var(--muted)}
+footer.end{margin:60px 0 40px;text-align:center;color:var(--muted);font-size:.9rem}
+
+@media print{
+  body{background:#fff;color:#000;font-size:11pt}
+  .cover{min-height:auto;height:100vh;page-break-after:always;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .toc{page-break-after:always}
+  section.sec{page-break-before:always;margin-top:0}
+  pre.code{white-space:pre-wrap;word-break:break-word}
+  .codebox,.card,.callout,table,figure{page-break-inside:avoid}
+  .codebar button{display:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+
+<!-- ═════════════ PORTADA ═════════════ -->
+<header class="cover" id="portada">
+  <div class="wrap">
+    <div class="kicker">Segundamano · Manual de integración</div>
+    <h1>Conexión con aplicaciones de flujos</h1>
+    <p class="sub">Cómo hacer que una aplicación hable con un flujo de n8n, Fluxion8n, Power Automate o Copilot Studio: URLs, autenticación, mensajes de ida y vuelta, ejemplos y solución de problemas.</p>
+    <div class="chips">
+      <span class="chip n8n">n8n</span>
+      <span class="chip flux">Fluxion8n</span>
+      <span class="chip pa">Power Automate</span>
+      <span class="chip cs">Copilot Studio</span>
+      <span class="chip gen">Conexión rápida</span>
+    </div>
+    <div class="meta">
+      <span><strong>Versión del manual:</strong> 1.0</span>
+      <span><strong>Fecha:</strong> 12 de octubre de 2026</span>
+      <span><strong>Idioma:</strong> español</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═════════════ ÍNDICE ═════════════ -->
+<nav class="toc" id="indice" aria-label="Índice">
+  <div class="wrap">
+    <h2>Índice</h2>
+    <ol>
+      <li class="top"><a href="#intro"><span class="dot" style="background:var(--gen)"></span>1. Cómo se conecta una app con un flujo</a></li>
+      <li class="sub"><a href="#intro-que">1.1 La idea en un minuto</a></li>
+      <li class="sub"><a href="#intro-esquema">1.2 Esquema general</a></li>
+      <li class="sub"><a href="#intro-leer">1.3 Cómo leer este manual (colores del código)</a></li>
+      <li class="sub"><a href="#intro-contrato">1.4 El contrato de mensajes</a></li>
+      <li class="sub"><a href="#intro-app">1.5 Dónde se configura en Segundamano</a></li>
+
+      <li class="top"><a href="#n8n"><span class="dot" style="background:var(--n8n)"></span>2. n8n</a></li>
+      <li class="sub"><a href="#n8n-antes">2.1 Antes de empezar</a></li>
+      <li class="sub"><a href="#n8n-webhook">2.2 El nodo Webhook</a></li>
+      <li class="sub"><a href="#n8n-urls">2.3 URL de prueba y URL de producción</a></li>
+      <li class="sub"><a href="#n8n-auth">2.4 Autenticación</a></li>
+      <li class="sub"><a href="#n8n-responder">2.5 Devolver la respuesta</a></li>
+      <li class="sub"><a href="#n8n-ejemplo">2.6 Ejemplo completo paso a paso</a></li>
+      <li class="sub"><a href="#n8n-chat">2.7 Variante: Chat Trigger</a></li>
+      <li class="sub"><a href="#n8n-red">2.8 Red, CORS y límites</a></li>
+
+      <li class="top"><a href="#flux"><span class="dot" style="background:var(--flux)"></span>3. Fluxion8n</a></li>
+      <li class="sub"><a href="#flux-igual">3.1 Qué es igual que n8n</a></li>
+      <li class="sub"><a href="#flux-pasos">3.2 Pasos</a></li>
+      <li class="sub"><a href="#flux-privada">3.3 Servidores en red local</a></li>
+
+      <li class="top"><a href="#pa"><span class="dot" style="background:var(--pa)"></span>4. Power Automate</a></li>
+      <li class="sub"><a href="#pa-trigger">4.1 El disparador HTTP</a></li>
+      <li class="sub"><a href="#pa-acceso">4.2 Quién puede llamar</a></li>
+      <li class="sub"><a href="#pa-paso">4.3 Paso a paso</a></li>
+      <li class="sub"><a href="#pa-entra">4.4 Variante con Microsoft Entra ID</a></li>
+
+      <li class="top"><a href="#cs"><span class="dot" style="background:var(--cs)"></span>5. Copilot Studio</a></li>
+      <li class="sub"><a href="#cs-rutas">5.1 Dos rutas posibles</a></li>
+      <li class="sub"><a href="#cs-flujo">5.2 Ruta A: mediante un flujo de Power Automate</a></li>
+      <li class="sub"><a href="#cs-dl">5.3 Ruta B: canal Direct Line</a></li>
+
+      <li class="top"><a href="#otras"><span class="dot" style="background:var(--gen)"></span>6. Otras herramientas de flujos</a></li>
+      <li class="top"><a href="#seguridad"><span class="dot" style="background:var(--danger)"></span>7. Seguridad</a></li>
+      <li class="top"><a href="#rapida"><span class="dot" style="background:#16a34a"></span>8. Conexión rápida (usuarios avanzados)</a></li>
+      <li class="top"><a href="#problemas"><span class="dot" style="background:var(--warn)"></span>9. Solución de problemas</a></li>
+      <li class="top"><a href="#glosario"><span class="dot" style="background:#475569"></span>10. Glosario de definiciones</a></li>
+    </ol>
+  </div>
+</nav>
+
+<main>
+
+<!-- ═════════════ 1. INTRODUCCIÓN ═════════════ -->
+<section class="sec s-gen" id="intro">
+  <div class="wrap">
+    <h2><span class="num">1</span> Cómo se conecta una app con un flujo</h2>
+    <p class="lead">Todas las herramientas de flujos (n8n, Fluxion8n, Power Automate…) se conectan igual: la aplicación hace una petición HTTP a una dirección que el flujo tiene abierta, y el flujo contesta.</p>
+
+    <h3 id="intro-que">1.1 La idea en un minuto</h3>
+    <p>Un <strong>flujo</strong> es una cadena de pasos (nodos) que alguien ha dibujado: «cuando llegue un mensaje, pregunta a la IA, guarda el resultado y devuélvelo». Para que otra aplicación pueda <em>empezar</em> ese flujo, el primer paso es un <strong>disparador</strong> (trigger) que escucha en una URL. Esa URL se llama <strong>webhook</strong>.</p>
+    <div class="grid">
+      <div class="card"><strong>1. Tú configuras el flujo</strong><br>Pones un disparador Webhook (o «When an HTTP request is received») y copias su URL.</div>
+      <div class="card"><strong>2. La app llama a la URL</strong><br>Envía una petición <code class="i">POST</code> con un JSON: el mensaje, la sesión, el contexto.</div>
+      <div class="card"><strong>3. El flujo trabaja</strong><br>Ejecuta sus nodos: IA, bases de datos, correo…</div>
+      <div class="card"><strong>4. El flujo responde</strong><br>Devuelve un JSON con el resultado, que la app muestra al usuario.</div>
+    </div>
+
+    <h3 id="intro-esquema">1.2 Esquema general</h3>
+    <figure class="diagram">
+      <svg viewBox="0 0 900 190" role="img" aria-label="Esquema: la aplicación envía una petición al webhook del flujo y recibe la respuesta">
+        <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker></defs>
+        <rect x="10" y="50" width="190" height="90" rx="14" fill="#f59e0b"/><text x="105" y="90" text-anchor="middle" fill="#1b2437" font-size="18" font-weight="700">Tu aplicación</text><text x="105" y="114" text-anchor="middle" fill="#1b2437" font-size="13">(Segundamano, un script…)</text>
+        <rect x="355" y="50" width="190" height="90" rx="14" fill="#7c3aed"/><text x="450" y="90" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">Webhook</text><text x="450" y="114" text-anchor="middle" fill="#fff" font-size="13">URL del flujo</text>
+        <rect x="700" y="50" width="190" height="90" rx="14" fill="#0a9a8a"/><text x="795" y="90" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">Flujo</text><text x="795" y="114" text-anchor="middle" fill="#fff" font-size="13">nodos / acciones</text>
+        <line x1="205" y1="80" x2="350" y2="80" stroke="#64748b" stroke-width="3" marker-end="url(#ar)"/><text x="278" y="70" text-anchor="middle" fill="#64748b" font-size="13">① POST + JSON</text>
+        <line x1="550" y1="80" x2="695" y2="80" stroke="#64748b" stroke-width="3" marker-end="url(#ar)"/><text x="623" y="70" text-anchor="middle" fill="#64748b" font-size="13">② ejecuta</text>
+        <path d="M795 145 C795 185 105 185 105 145" fill="none" stroke="#16a34a" stroke-width="3" marker-end="url(#ar)"/><text x="450" y="182" text-anchor="middle" fill="#16a34a" font-size="13">③ respuesta JSON (Respond to Webhook / Response)</text>
+      </svg>
+      <figcaption>La app siempre empieza la conversación; el flujo nunca llama a la app por su cuenta (salvo que tú se lo programes).</figcaption>
+    </figure>
+
+    <h3 id="intro-leer">1.3 Cómo leer este manual</h3>
+    <p>Todo el código está en recuadros <strong>oscuros</strong> con un botón <em>Copiar</em>. El texto normal es texto; lo que va en recuadro oscuro es algo que se escribe o se pega tal cual. Los colores significan:</p>
+    <div class="legend"><span class="l1">Nombres de campos y opciones</span><span class="l2">Textos entre comillas</span><span class="l3">Números</span><span class="l4">Comentarios (explican el código; no se escriben)</span><span class="l5">Comandos</span></div>
+    <div class="callout info"><b class="t">Nota sobre los comentarios</b><p>El JSON real <strong>no admite comentarios</strong>. En este manual algunos recuadros JSON llevan líneas que empiezan por <code class="i">//</code> para explicarlos; el botón <em>Copiar</em> las quita automáticamente. Si copias a mano, bórralas.</p></div>
+    <div class="callout nover"><b class="t">Qué está comprobado y qué no</b><p><span class="badge ok">Corpus n8n</span> = contrastado con la documentación oficial de n8n incluida en el repositorio (<code class="i">Documentos/Conocimiento/n8n/</code>).<br><span class="badge nover">Sin verificar</span> = escrito de memoria o a partir de búsquedas; no se pudo abrir la documentación oficial en directo. Compruébalo antes de depender de ello.</p></div>
+
+    <h3 id="intro-contrato">1.4 El contrato de mensajes</h3>
+    <p>Para que dos programas se entiendan hay que acordar qué se envía y qué se recibe. Es el <strong>contrato</strong>. Este manual usa uno sencillo que funciona en todas las plataformas. Si tu flujo ya existe con otro formato, se adapta con un nodo intermedio.</p>
+    <div class="codebox"><div class="codebar"><span class="lang">json · petición (la app → el flujo)</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="json" data-strip="1">{
+  // Datos que la aplicación envía por POST con Content-Type: application/json
+  "action": "sendMessage",            // compatible con el Chat Trigger de n8n (ver 2.7)
+  "sessionId": "usuario-42-sesion-1", // identifica la conversación; el flujo puede usarlo como memoria
+  "chatInput": "Busco una bici de montaña barata", // lo que escribió la persona
+  "systemPrompt": "Eres el asistente de una tienda de segunda mano.", // instrucciones fijas para la IA (opcional)
+  "test": false                       // true cuando es una prueba de conexión
+}</pre></div>
+    <div class="codebox"><div class="codebar"><span class="lang">json · respuesta (el flujo → la app)</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="json" data-strip="1">{
+  // Texto que la app mostrará. "output" es el nombre que usa el Chat Trigger de n8n.
+  "output": "Te recomiendo la bicicleta de montaña de 120 €."
+}</pre></div>
+    <div class="callout tip"><b class="t">Consejo</b><p>Haz que el flujo responda siempre con la clave <code class="i">output</code>. Una app tolerante puede aceptar también <code class="i">reply</code>, <code class="i">text</code> o <code class="i">message</code>, pero es mejor no depender de ello.</p></div>
+
+    <h3 id="intro-app">1.5 Dónde se configura en Segundamano</h3>
+    <p>En la aplicación, abre <kbd>Ajustes</kbd>. Hay dos pestañas y el mismo esquema de tarjetas para las dos:</p>
+    <div class="tablewrap"><table>
+      <tr><th>Pestaña</th><th>Para qué sirve</th><th>Campos</th></tr>
+      <tr><td><strong>Cuentas de IA</strong></td><td>Conectar directamente con un proveedor de modelos (Anthropic, OpenAI, Gemini o un servidor compatible).</td><td>Nombre, proveedor, host, API Key, modelo.</td></tr>
+      <tr><td><strong>Flujos (n8n y similares)</strong></td><td>Conectar con un webhook de n8n, Fluxion8n, Power Automate u otra herramienta (secciones 2 a 6 de este manual).</td><td>Nombre, herramienta, URL, autenticación (ninguna, cabecera, Basic, Bearer), tiempo de espera.</td></tr>
+    </table></div>
+    <ul>
+      <li><strong>Añadir:</strong> botón «+ Añadir…» → ventana con el formulario y <em>Probar conexión</em> antes de guardar.</li>
+      <li><strong>Editar:</strong> el lápiz de cada tarjeta. <strong>Borrar:</strong> la papelera (con confirmación); se puede borrar cualquiera, también la activa.</li>
+      <li><strong>Activa:</strong> solo una conexión a la vez. La primera que das de alta queda activa; las demás se activan con «Activar cuenta».</li>
+      <li><strong>Respaldo automático:</strong> si la conexión activa es un <em>flujo</em> y falla (error, tiempo agotado o respuesta sin texto), la app pasa <strong>sola</strong> a la cuenta de IA que hayas elegido como respaldo y lo avisa en el chat. Si la activa es una cuenta de IA y falla, se muestra el error.</li>
+      <li><strong>Sin conexiones:</strong> el botón «Asistente» queda bloqueado (gris) y explica por qué; también si hay conexiones pero ninguna activa.</li>
+    </ul>
+    <div class="callout warn"><b class="t">Desde el navegador</b><p>Segundamano se ejecuta en el navegador, así que las llamadas a tu flujo están sujetas a las reglas del navegador: <strong>CORS</strong> (permite el origen en el flujo; abierta con doble clic, la web tiene origen «null», que solo acepta <code class="i">*</code>), <strong>contenido mixto</strong> (una web https no puede llamar a una URL http) y <strong>redes privadas</strong> (<code class="i">localhost</code> o <code class="i">192.168.x.x</code> pueden estar restringidas). Si <em>Probar conexión</em> falla con «CORS, una dirección privada o contenido mixto», es una de estas tres.</p></div>
+    <div class="callout danger"><b class="t">Claves en el navegador</b><p>En este prototipo las claves se guardan <strong>sin cifrar</strong> en el almacenamiento del navegador. Sirve para una demostración; para un uso real, las llamadas y las claves deben vivir en un servidor.</p></div>
+  </div>
+</section>
+
+<!-- ═════════════ 2. n8n ═════════════ -->
+<section class="sec s-n8n" id="n8n">
+  <div class="wrap">
+    <h2><span class="num">2</span> n8n <span class="badge ok">Corpus n8n</span></h2>
+    <p class="lead">n8n expone sus flujos al exterior con el nodo <strong>Webhook</strong>. Es la vía normal para que una aplicación lo llame.</p>
+
+    <h3 id="n8n-antes">2.1 Antes de empezar</h3>
+    <ul>
+      <li>Un n8n accesible desde donde corre tu aplicación (misma máquina, red local o Internet).</li>
+      <li>Un flujo <strong>publicado/activo</strong>: la URL de producción solo funciona con el flujo activo.</li>
+      <li>Decidir la autenticación (sección 2.4) <em>antes</em> de exponer la URL.</li>
+    </ul>
+
+    <h3 id="n8n-webhook">2.2 El nodo Webhook</h3>
+    <p>Es un nodo disparador: «cuando llegue una petición a esta dirección, empieza el flujo». Sus ajustes principales:</p>
+    <div class="tablewrap"><table>
+      <tr><th>Ajuste</th><th>Qué hace</th><th>Valor recomendado para una app</th></tr>
+      <tr><td><kbd>HTTP Method</kbd></td><td>Método HTTP aceptado (GET, POST, PUT, PATCH, DELETE, HEAD).</td><td><code class="i">POST</code>, porque llevamos un JSON en el cuerpo.</td></tr>
+      <tr><td><kbd>Path</kbd></td><td>Parte final de la URL. Por defecto es un texto aleatorio; puedes poner uno fijo.</td><td>Uno claro y no adivinable, p. ej. <code class="i">asistente</code>.</td></tr>
+      <tr><td><kbd>Authentication</kbd></td><td>Exige credenciales: Basic auth, Header auth, JWT auth o ninguna.</td><td><strong>Header auth</strong> (sección 2.4).</td></tr>
+      <tr><td><kbd>Respond</kbd></td><td>Cuándo y cómo se contesta: <em>Immediately</em>, <em>When Last Node Finishes</em>, <em>Using 'Respond to Webhook' Node</em> o <em>Streaming response</em>.</td><td><em>Using 'Respond to Webhook' Node</em> (control total de la respuesta).</td></tr>
+    </table></div>
+    <p>Opciones útiles (<kbd>Add Option</kbd>): <em>Allowed Origins (CORS)</em>, <em>IP(s) Allowlist</em> (solo esas IP pueden llamar; las demás reciben 403), <em>Raw Body</em>, <em>Response Headers</em> y <em>Only Run If</em> (solo ejecuta si una expresión sobre la petición es cierta).</p>
+    <div class="callout info"><b class="t">Qué recibe el flujo</b><p>Dentro del flujo, la petición llega como <code class="i">{ body, headers, params, query }</code>. Tu JSON está en <code class="i">$json.body</code>; por ejemplo, el texto del usuario es <code class="i">{{ $json.body.chatInput }}</code>.</p></div>
+
+    <h3 id="n8n-urls">2.3 URL de prueba y URL de producción</h3>
+    <p>El nodo muestra <strong>dos</strong> direcciones. Confundirlas es el error nº 1.</p>
+    <div class="tablewrap"><table>
+      <tr><th></th><th>URL de prueba</th><th>URL de producción</th></tr>
+      <tr><td>Forma</td><td><code class="i">https://TU-N8N/webhook-test/RUTA</code></td><td><code class="i">https://TU-N8N/webhook/RUTA</code></td></tr>
+      <tr><td>Cuándo funciona</td><td>Solo mientras pulsas <em>Listen for test event</em> (o <em>Execute workflow</em>); atiende <strong>una</strong> llamada.</td><td>Siempre que el flujo esté <strong>publicado/activo</strong>.</td></tr>
+      <tr><td>¿Se ven los datos en el editor?</td><td>Sí, al instante.</td><td>No; se consultan en la pestaña <em>Executions</em>.</td></tr>
+      <tr><td>Úsala para…</td><td>Construir y depurar.</td><td><strong>La configuración de tu aplicación.</strong></td></tr>
+    </table></div>
+    <div class="callout warn"><b class="t">Atención</b><p>Si pegas la URL de prueba en tu aplicación, funcionará una vez y después dará <code class="i">404</code>. En la aplicación se usa siempre la de <strong>producción</strong>.</p></div>
+
+    <h3 id="n8n-auth">2.4 Autenticación</h3>
+    <p>Sin autenticación, cualquiera que conozca la URL puede ejecutar tu flujo (y gastar tus créditos de IA). Opciones del nodo Webhook:</p>
+    <div class="tablewrap"><table>
+      <tr><th>Método</th><th>Cómo se configura en n8n</th><th>Qué envía la app</th></tr>
+      <tr><td><strong>Header auth</strong> (recomendado)</td><td>Credencial con un <em>Name</em> de cabecera y un <em>Value</em> secreto.</td><td>Una cabecera con ese nombre y valor.</td></tr>
+      <tr><td><strong>Basic auth</strong></td><td>Credencial con usuario y contraseña.</td><td><code class="i">Authorization: Basic base64(usuario:clave)</code></td></tr>
+      <tr><td><strong>JWT auth</strong></td><td>Credencial JWT (clave compartida o PEM).</td><td><code class="i">Authorization: Bearer TOKEN_JWT</code> firmado.</td></tr>
+      <tr><td><strong>None</strong></td><td>—</td><td>Nada. Solo para pruebas locales.</td></tr>
+    </table></div>
+    <h4>Ejemplo: Header auth</h4>
+    <ol class="steps">
+      <li>En el nodo Webhook, <kbd>Authentication</kbd> → <kbd>Header Auth</kbd> → <kbd>Create new credential</kbd>.</li>
+      <li><kbd>Name</kbd> = <code class="i">X-Api-Key</code>; <kbd>Value</kbd> = una clave larga y aleatoria (guárdala en tu gestor de contraseñas).</li>
+      <li>En la aplicación, configura esa misma cabecera y valor.</li>
+    </ol>
+    <div class="codebox"><div class="codebar"><span class="lang">bash · generar una clave aleatoria</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="bash"># Genera 32 bytes aleatorios en hexadecimal: úsalos como valor de la cabecera
+openssl rand -hex 32</pre></div>
+    <div class="codebox"><div class="codebar"><span class="lang">bash · probar la llamada con curl</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="bash"># -X POST        → método HTTP
+# -H "..."       → cabeceras: tipo de contenido y la clave de autenticación
+# -d '...'       → cuerpo JSON de la petición
+curl -X POST "https://TU-N8N/webhook/asistente" \
+  -H "Content-Type: application/json" \
+  -H "X-Api-Key: PEGA_AQUI_TU_CLAVE" \
+  -d '{"action":"sendMessage","sessionId":"prueba-1","chatInput":"Hola","test":true}'</pre></div>
+
+    <h3 id="n8n-responder">2.5 Devolver la respuesta</h3>
+    <p>El ajuste <kbd>Respond</kbd> del Webhook decide qué recibe la app:</p>
+    <div class="tablewrap"><table>
+      <tr><th>Opción</th><th>Qué devuelve</th><th>¿Sirve para un asistente?</th></tr>
+      <tr><td><em>Immediately</em></td><td>Un mensaje fijo («Workflow got started») sin esperar al flujo.</td><td>No: la app no recibe la respuesta de la IA.</td></tr>
+      <tr><td><em>When Last Node Finishes</em></td><td>Los datos del último nodo (todas las entradas, la primera en JSON o sin cuerpo, según <kbd>Response Data</kbd>).</td><td>Sí, si el último nodo ya produce <code class="i">output</code>.</td></tr>
+      <tr><td><em>Using 'Respond to Webhook' Node</em></td><td>Lo que tú definas en un nodo <em>Respond to Webhook</em> (JSON, texto, entrada, redirección…).</td><td><strong>Sí, es la más flexible.</strong></td></tr>
+      <tr><td><em>Streaming response</em></td><td>Va enviando texto según se genera (requiere nodos con soporte, como AI Agent).</td><td>Solo si la app sabe leer streaming.</td></tr>
+    </table></div>
+    <div class="callout info"><b class="t">Comportamientos del nodo Respond to Webhook</b><p>Si el flujo termina sin ejecutarlo, devuelve un mensaje estándar con 200. Si falla antes de llegar a él, devuelve un error 500. Si se ejecuta un segundo nodo de respuesta, se ignora. Se ejecuta una sola vez con el primer elemento.</p></div>
+
+    <h3 id="n8n-ejemplo">2.6 Ejemplo completo paso a paso</h3>
+    <p>Un flujo mínimo que recibe el mensaje y devuelve un eco. Sirve para comprobar la conexión antes de añadir la IA.</p>
+    <ol class="steps">
+      <li>Crea un flujo nuevo y añade el nodo <kbd>Webhook</kbd>: método <code class="i">POST</code>, ruta <code class="i">asistente</code>, autenticación Header Auth, <kbd>Respond</kbd> = <em>Using 'Respond to Webhook' Node</em>.</li>
+      <li>Añade <kbd>Respond to Webhook</kbd> detrás: <kbd>Respond With</kbd> = <em>JSON</em>.</li>
+      <li>Escribe el cuerpo de la respuesta (código de abajo).</li>
+      <li>Pulsa <kbd>Listen for test event</kbd> y prueba con la URL <em>de prueba</em> y <code class="i">curl</code>.</li>
+      <li>Publica el flujo y repite con la URL <em>de producción</em>.</li>
+    </ol>
+    <div class="codebox"><div class="codebar"><span class="lang">js · cuerpo del nodo «Respond to Webhook» (expresión de n8n)</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="js">// Las expresiones de n8n van entre {{ }} y empiezan con "=" cuando son todo el campo.
+// $json.body es el JSON que mandó la app; chatInput es el texto de la persona.
+={{ { "output": "Recibido: " + $json.body.chatInput } }}</pre></div>
+    <p>Para ahorrar tiempo, puedes <strong>importar</strong> este flujo (menú <kbd>⋯</kbd> → <kbd>Import from file / URL</kbd>, o pegarlo con Ctrl+V sobre el lienzo). Después selecciona tu credencial en el Webhook.</p>
+    <div class="codebox"><div class="codebar"><span class="lang">json · flujo importable (orientativo)</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="json">{
+  "name": "Asistente - respuesta de prueba",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "asistente",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"output\": \"Recibido: \" + $json.body.chatInput } }}",
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [240, 0]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[ { "node": "Respond to Webhook", "type": "main", "index": 0 } ]] }
+  }
+}</pre></div>
+    <div class="callout nover"><b class="t">Sin verificar</b><p>Los números de versión de los nodos (<code class="i">typeVersion</code>) y los nombres internos de parámetros pueden variar entre versiones de n8n. Si la importación se queja, crea los dos nodos a mano con la tabla de la sección 2.2.</p></div>
+    <h4>Añadir la IA</h4>
+    <p>Sustituye el eco por un nodo <kbd>AI Agent</kbd> (o <kbd>Basic LLM Chain</kbd>) con su modelo y pon como entrada <code class="i">{{ $json.body.chatInput }}</code>. Después, en <em>Respond to Webhook</em>, devuelve la salida del agente como <code class="i">output</code>.</p>
+
+    <h3 id="n8n-chat">2.7 Variante: Chat Trigger</h3>
+    <p>El nodo <kbd>Chat Trigger</kbd> es un disparador pensado para asistentes de chat: añade interfaz de chat alojada, memoria por sesión y se conecta directamente a un agente. Admite autenticación <em>None</em>, <em>Basic Auth</em> o <em>n8n User Auth</em>. El modo <em>Embedded Chat</em> te da una <em>Chat URL</em> a la que puede llamar tu propia interfaz.</p>
+    <div class="callout warn"><b class="t">Ojo con el consumo</b><p>Cada mensaje al Chat Trigger ejecuta el flujo: una conversación de 10 mensajes son 10 ejecuciones.</p></div>
+    <div class="callout nover"><b class="t">Sin verificar</b><p>El formato exacto del cuerpo que acepta la <em>Chat URL</em> (<code class="i">action</code>, <code class="i">sessionId</code>, <code class="i">chatInput</code>) y que la respuesta venga en <code class="i">output</code> es el que usa el widget oficial de n8n; está escrito de memoria. Por eso el contrato de la sección 1.4 usa esos mismos nombres.</p></div>
+
+    <h3 id="n8n-red">2.8 Red, CORS y límites</h3>
+    <ul>
+      <li><strong>Tamaño máximo:</strong> el cuerpo de un webhook admite hasta 16 MB (en n8n autoalojado se cambia con <code class="i">N8N_PAYLOAD_SIZE_MAX</code>).</li>
+      <li><strong>CORS:</strong> solo afecta a llamadas hechas <em>desde un navegador</em>. Ajusta <em>Allowed Origins (CORS)</em> en las opciones del Webhook con el dominio de tu app. Si la llamada la hace un servidor, CORS no interviene.</li>
+      <li><strong>Lista de IP:</strong> la opción <em>IP(s) Allowlist</em> limita quién puede invocar el webhook (403 si no está en la lista).</li>
+      <li><strong>HTTPS:</strong> en Internet, usa siempre HTTPS (la clave viaja en una cabecera).</li>
+      <li><strong>Tiempo:</strong> una IA puede tardar decenas de segundos. Configura en la app un tiempo de espera generoso (p. ej. 120 s).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═════════════ 3. FLUXION8N ═════════════ -->
+<section class="sec s-flux" id="flux">
+  <div class="wrap">
+    <h2><span class="num">3</span> Fluxion8n</h2>
+    <p class="lead">Fluxion8n es una réplica de n8n: el nodo Webhook, el nodo Respond to Webhook y la forma de autenticar funcionan como se explica en la sección 2.</p>
+
+    <h3 id="flux-igual">3.1 Qué es igual que n8n</h3>
+    <div class="grid">
+      <div class="card"><strong>Disparador</strong><br>Nodo <em>Webhook</em> con método, ruta y autenticación.</div>
+      <div class="card"><strong>Respuesta</strong><br>Nodo <em>Respond to Webhook</em> o «When Last Node Finishes».</div>
+      <div class="card"><strong>Contrato</strong><br>El mismo JSON de la sección 1.4 sirve sin cambios.</div>
+      <div class="card"><strong>Modos de URL</strong><br>Prueba (mientras escuchas) y producción (flujo activo).</div>
+    </div>
+    <div class="callout nover"><b class="t">Sin verificar</b><p>Este manual no analiza el código de Fluxion8n: asume que replica n8n. El <strong>formato exacto de la URL</strong> puede diferir; usa siempre la dirección que te muestra el propio nodo Webhook en Fluxion8n, no la de los ejemplos.</p></div>
+
+    <h3 id="flux-pasos">3.2 Pasos</h3>
+    <ol class="steps">
+      <li>Abre el flujo en Fluxion8n y añade el nodo <kbd>Webhook</kbd>: <code class="i">POST</code>, una ruta propia y autenticación por cabecera.</li>
+      <li>Añade <kbd>Respond to Webhook</kbd> con el JSON <code class="i">{ "output": "…" }</code>.</li>
+      <li>Activa el flujo y copia la <strong>URL de producción</strong> del nodo.</li>
+      <li>Prueba con <code class="i">curl</code> (sección 2.4) cambiando la URL por la tuya.</li>
+      <li>En la aplicación que llamará al flujo, pega la URL y la cabecera.</li>
+    </ol>
+    <h3 id="flux-privada">3.3 Servidores en red local</h3>
+    <p>Si Fluxion8n (o n8n) corre en tu ordenador o en un NAS, la URL será una dirección privada (<code class="i">localhost</code>, <code class="i">192.168.x.x</code>…). Dos cosas pueden impedir la llamada:</p>
+    <ul>
+      <li><strong>Desde el navegador</strong> (como Segundamano): hace falta permitir el origen (CORS) en el flujo y no mezclar https con http. Ver sección 1.5.</li>
+      <li><strong>Desde un servidor</strong> con protección SSRF: muchas aplicaciones bloquean por defecto las direcciones privadas. Hay que permitirlo expresamente en su configuración de administrador, nunca desde un flujo.</li>
+    </ul>
+    <div class="callout tip"><b class="t">Alternativa</b><p>Publica el flujo detrás de un dominio con HTTPS (un proxy inverso o un túnel) y usa esa URL pública, con autenticación.</p></div>
+  </div>
+</section>
+
+<!-- ═════════════ 4. POWER AUTOMATE ═════════════ -->
+<section class="sec s-pa" id="pa">
+  <div class="wrap">
+    <h2><span class="num">4</span> Power Automate <span class="badge nover">Sin verificar</span></h2>
+    <p class="lead">Power Automate (Microsoft) abre un flujo al exterior con el disparador <strong>«When an HTTP request is received»</strong> y contesta con la acción <strong>«Response»</strong>.</p>
+    <div class="callout nover"><b class="t">Origen de esta sección</b><p>No se pudo abrir la documentación oficial de Microsoft desde el entorno donde se escribió este manual. Lo siguiente se basa en búsquedas y conocimiento general; verifica los nombres de menús y licencias en <em>learn.microsoft.com</em>. Además, este disparador es un conector <em>premium</em> (suele requerir licencia de pago).</p></div>
+
+    <h3 id="pa-trigger">4.1 El disparador HTTP</h3>
+    <p>Al guardar el flujo, Power Automate genera una <strong>URL HTTP POST</strong> larga. Esa URL ya contiene una firma (parámetro <code class="i">sig=…</code>): quien la conozca puede ejecutar el flujo. Es, a la vez, dirección y contraseña.</p>
+    <h3 id="pa-acceso">4.2 Quién puede llamar</h3>
+    <div class="tablewrap"><table>
+      <tr><th>Opción («Who can trigger the flow?»)</th><th>Significado</th><th>Cuándo usarla</th></tr>
+      <tr><td><strong>Anyone</strong></td><td>Cualquiera con la URL firmada (clave SAS en la URL).</td><td>Pruebas y apps sencillas. <strong>Trata la URL como un secreto.</strong></td></tr>
+      <tr><td><strong>Any user in my tenant</strong></td><td>Hace falta un token de Microsoft Entra ID de tu organización.</td><td>Integraciones internas con identidad.</td></tr>
+      <tr><td><strong>Specific users in my tenant</strong></td><td>Solo las cuentas/aplicaciones que enumeres.</td><td>Más control.</td></tr>
+    </table></div>
+
+    <h3 id="pa-paso">4.3 Paso a paso (opción «Anyone»)</h3>
+    <ol class="steps">
+      <li>En Power Automate: <kbd>Crear</kbd> → <kbd>Flujo de nube instantáneo</kbd> → disparador <kbd>When an HTTP request is received</kbd>.</li>
+      <li>En <kbd>Request Body JSON Schema</kbd> pega un esquema como el de abajo (o usa <kbd>Use sample payload to generate schema</kbd> con el JSON de la sección 1.4).</li>
+      <li>Añade tus acciones (p. ej. un conector de IA o <em>Copilot Studio</em>).</li>
+      <li>Añade la acción <kbd>Response</kbd>: código <code class="i">200</code>, cabecera <code class="i">Content-Type: application/json</code> y cuerpo con <code class="i">output</code>.</li>
+      <li>Guarda: el disparador mostrará la <strong>HTTP POST URL</strong>. Cópiala.</li>
+    </ol>
+    <div class="codebox"><div class="codebar"><span class="lang">json · esquema del cuerpo de la petición</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="json" data-strip="1">{
+  // Describe qué campos espera el flujo. Con esto, Power Automate te ofrece
+  // chatInput, sessionId… como "contenido dinámico" en las acciones siguientes.
+  "type": "object",
+  "properties": {
+    "action":       { "type": "string" },
+    "sessionId":    { "type": "string" },
+    "chatInput":    { "type": "string" },  // texto de la persona
+    "systemPrompt": { "type": "string" },
+    "test":         { "type": "boolean" }
+  }
+}</pre></div>
+    <div class="codebox"><div class="codebar"><span class="lang">json · cuerpo de la acción «Response»</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="json" data-strip="1">{
+  // Sustituye el texto por el contenido dinámico de tu acción de IA.
+  "output": "Respuesta generada por el flujo"
+}</pre></div>
+    <div class="codebox"><div class="codebar"><span class="lang">bash · probar la llamada</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="bash"># La URL completa (con ?api-version=...&amp;sig=...) se pega ENTERA, entre comillas.
+# No hace falta cabecera de autenticación: la firma ya va dentro de la URL.
+curl -X POST "https://prod-00.westeurope.logic.azure.com:443/workflows/ID/triggers/manual/paths/invoke?api-version=2016-06-01&amp;sig=FIRMA_SECRETA" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"sendMessage","sessionId":"prueba-1","chatInput":"Hola","test":true}'</pre></div>
+    <div class="callout warn"><b class="t">Tiempo de espera</b><p>Una llamada que espera una <em>Response</em> tiene un límite de tiempo (del orden de un par de minutos; <span class="badge nover">sin verificar</span>). Si tu IA tarda más, el llamante recibe un error aunque el flujo siga ejecutándose.</p></div>
+    <div class="callout danger"><b class="t">Si se filtra la URL</b><p>Regenera la clave del flujo (o crea el disparador de nuevo) para invalidar la URL antigua, y guarda la nueva en un lugar seguro. No la pegues en chats ni repositorios.</p></div>
+
+    <h3 id="pa-entra">4.4 Variante con Microsoft Entra ID</h3>
+    <p>Con <em>Any user in my tenant</em> o <em>Specific users</em>, la aplicación debe enviar un <strong>token de acceso</strong> de Microsoft Entra ID en la cabecera <code class="i">Authorization: Bearer …</code>. Resumen del procedimiento:</p>
+    <ol class="steps">
+      <li>Registra una aplicación en Microsoft Entra ID y crea un secreto de cliente.</li>
+      <li>Añade su identificador (o el de la cuenta) a la lista de usuarios permitidos del disparador.</li>
+      <li>Pide un token con el flujo <em>client credentials</em> y úsalo en la llamada.</li>
+    </ol>
+    <div class="codebox"><div class="codebar"><span class="lang">bash · obtener el token (esquema)</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="bash"># Sustituye TENANT_ID, CLIENT_ID y CLIENT_SECRET por los de tu aplicación registrada.
+# El valor de "scope" (recurso de Power Automate) está SIN VERIFICAR: confírmalo en la documentación de Microsoft.
+curl -X POST "https://login.microsoftonline.com/TENANT_ID/oauth2/v2.0/token" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=CLIENT_ID" \
+  -d "client_secret=CLIENT_SECRET" \
+  -d "scope=https://service.flow.microsoft.com//.default"</pre></div>
+    <div class="callout nover"><b class="t">Sin verificar</b><p>El detalle del <em>scope</em> (con doble barra) viene de blogs de terceros, no de la documentación oficial. Esta variante es más compleja; si no la necesitas, usa «Anyone» con la URL como secreto.</p></div>
+  </div>
+</section>
+
+<!-- ═════════════ 5. COPILOT STUDIO ═════════════ -->
+<section class="sec s-cs" id="cs">
+  <div class="wrap">
+    <h2><span class="num">5</span> Copilot Studio <span class="badge nover">Sin verificar</span></h2>
+    <p class="lead">Copilot Studio (Microsoft) crea <em>agentes</em> conversacionales. A diferencia de n8n, el agente no tiene «un webhook» por defecto: se llega a él por un canal o a través de un flujo.</p>
+
+    <h3 id="cs-rutas">5.1 Dos rutas posibles</h3>
+    <div class="grid">
+      <div class="card"><strong>Ruta A · mediante un flujo</strong><br>Una app llama a un flujo de Power Automate (sección 4); ese flujo conversa con el agente o hace el trabajo. Es lo más parecido a n8n.</div>
+      <div class="card"><strong>Ruta B · canal Direct Line</strong><br>Tu app habla directamente con el agente publicado: obtiene un token, abre una conversación y envía/lee actividades.</div>
+    </div>
+    <div class="callout nover"><b class="t">Origen de esta sección</b><p>La ruta B (token, conversación, actividades) está contrastada con resultados de búsqueda sobre la documentación de Microsoft («Publish an agent to mobile or custom apps»); no se pudo abrir la página oficial. Los nombres de los menús de Copilot Studio cambian con frecuencia.</p></div>
+
+    <h3 id="cs-flujo">5.2 Ruta A: mediante un flujo de Power Automate</h3>
+    <ol class="steps">
+      <li>Crea el flujo con <em>When an HTTP request is received</em> (sección 4).</li>
+      <li>Dentro, usa las acciones que necesites: p. ej. enviar el texto a un conector de IA o llamar a otro servicio.</li>
+      <li>Termina con <em>Response</em> y la clave <code class="i">output</code>.</li>
+      <li>Si quieres que el <strong>agente de Copilot Studio</strong> use ese flujo como herramienta, añádelo como <em>acción/herramienta</em> del agente desde Copilot Studio (la dirección contraria: agente → flujo).</li>
+    </ol>
+    <div class="callout info"><b class="t">Dos sentidos distintos</b><p><strong>App → flujo</strong> usa el disparador HTTP (sección 4). <strong>Agente → flujo</strong> usa las herramientas del agente. No son lo mismo; elige según quién empieza la conversación.</p></div>
+
+    <h3 id="cs-dl">5.3 Ruta B: canal Direct Line</h3>
+    <p>Pasos para hablar con el agente publicado desde tu propio programa:</p>
+    <ol class="steps">
+      <li>En Copilot Studio, publica el agente y abre <kbd>Canales</kbd> → <kbd>Aplicación móvil</kbd> (u otro canal personalizado). Copia el <strong>Token Endpoint</strong>.</li>
+      <li>Tu <strong>servidor</strong> (no el navegador) pide un token a esa dirección.</li>
+      <li>Con el token, abre una conversación en Direct Line.</li>
+      <li>Envía el mensaje del usuario como una <em>actividad</em> de tipo <code class="i">message</code>.</li>
+      <li>Lee las actividades nuevas (con <code class="i">watermark</code>) hasta que llegue la respuesta del agente.</li>
+    </ol>
+    <div class="codebox"><div class="codebar"><span class="lang">bash · Direct Line v3 paso a paso</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="bash"># 1) Pedir un token al "Token Endpoint" copiado de Copilot Studio.
+#    Devuelve algo como: { "token": "...", "expires_in": 1800, "conversationId": "..." }
+curl "URL_DEL_TOKEN_ENDPOINT"
+
+# 2) Abrir una conversación con ese token (en el endpoint global de Direct Line).
+#    Devuelve { "conversationId": "...", "token": "...", ... }
+curl -X POST "https://directline.botframework.com/v3/directline/conversations" \
+  -H "Authorization: Bearer TOKEN"
+
+# 3) Enviar el mensaje de la persona como una actividad de tipo "message".
+curl -X POST "https://directline.botframework.com/v3/directline/conversations/CONVERSATION_ID/activities" \
+  -H "Authorization: Bearer TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"type":"message","from":{"id":"usuario-42"},"text":"Hola"}'
+
+# 4) Leer las actividades nuevas. "watermark" evita releer las anteriores.
+#    Busca las que tengan from.id distinto del tuyo: son del agente.
+curl "https://directline.botframework.com/v3/directline/conversations/CONVERSATION_ID/activities?watermark=0" \
+  -H "Authorization: Bearer TOKEN"</pre></div>
+    <div class="callout danger"><b class="t">Seguridad</b><p>El <em>secreto</em> de Direct Line y el token no deben ir en código que se ejecute en un navegador. Pídelos desde el servidor y entrega al navegador, como máximo, el token de corta vida.</p></div>
+    <div class="callout warn"><b class="t">Diferencia de fondo con n8n</b><p>Direct Line es <em>asíncrono</em>: envías la actividad y luego consultas la respuesta. Un webhook de n8n devuelve la respuesta en la misma llamada. Si tu aplicación espera el formato de la sección 1.4, necesita un pequeño intermediario (un flujo o un servicio) que oculte ese ir y venir.</p></div>
+  </div>
+</section>
+
+<!-- ═════════════ 6. OTRAS ═════════════ -->
+<section class="sec s-gen" id="otras">
+  <div class="wrap">
+    <h2><span class="num">6</span> Otras herramientas de flujos <span class="badge nover">Sin verificar</span></h2>
+    <p class="lead">El patrón es siempre el mismo: URL + autenticación + JSON de ida + JSON de vuelta. Esta tabla es solo una orientación (escrita de memoria).</p>
+    <div class="tablewrap"><table>
+      <tr><th>Herramienta</th><th>Cómo se llama a un flujo</th><th>Autenticación habitual</th></tr>
+      <tr><td>Flowise</td><td>Endpoint «prediction» por flujo (POST con la pregunta).</td><td>Cabecera Bearer con clave de API (opcional).</td></tr>
+      <tr><td>Langflow</td><td>Endpoint «run» por flujo.</td><td>Cabecera con clave de API.</td></tr>
+      <tr><td>Dify</td><td>Endpoint de mensajes de chat de la aplicación.</td><td>Bearer con clave de la aplicación.</td></tr>
+      <tr><td>Zapier / Make</td><td>Webhook entrante («Catch Hook» / «Custom webhook»).</td><td>URL secreta; la respuesta síncrona depende del plan y del módulo.</td></tr>
+    </table></div>
+    <p>Los modelos de IA (Claude, ChatGPT, Gemini) no son «apps de flujos» como n8n: se conectan por su propia API o mediante herramientas (MCP, <em>function calling</em>). n8n puede actuar de puente entre ambos mundos.</p>
+  </div>
+</section>
+
+<!-- ═════════════ 7. SEGURIDAD ═════════════ -->
+<section class="sec s-sec" id="seguridad">
+  <div class="wrap">
+    <h2><span class="num">7</span> Seguridad</h2>
+    <p class="lead">Un webhook es una puerta de entrada a tu automatización. Ciérrala con llave.</p>
+    <div class="grid">
+      <div class="card"><strong>Autentica siempre</strong><br>Cabecera secreta, Basic o JWT. «None» solo en local y para probar.</div>
+      <div class="card"><strong>HTTPS</strong><br>Sin cifrado, la clave viaja a la vista de cualquiera en la ruta.</div>
+      <div class="card"><strong>Secretos fuera del código</strong><br>Ni en repositorios, ni en capturas, ni en chats. Si se filtra: regenerar.</div>
+      <div class="card"><strong>Lista de IP</strong><br>Si la app tiene IP fija, limita quién puede llamar (<em>IP(s) Allowlist</em> en n8n).</div>
+      <div class="card"><strong>Mínimo dato</strong><br>Envía al flujo solo lo necesario; evita contraseñas y datos personales innecesarios.</div>
+      <div class="card"><strong>Límites</strong><br>Tiempo de espera, tamaño máximo y control de frecuencia para no agotar créditos de IA.</div>
+    </div>
+    <div class="callout danger"><b class="t">Redes privadas y SSRF</b><p>Una aplicación que llama a URLs que le da un usuario podría usarse para atacar tu red interna (SSRF). Por eso muchas aplicaciones bloquean las direcciones privadas por defecto; actívalo solo si eres administrador y lo necesitas.</p></div>
+    <div class="callout tip"><b class="t">Listado de comprobación</b><p>☐ Autenticación activa &nbsp; ☐ HTTPS &nbsp; ☐ URL de producción &nbsp; ☐ Clave guardada en lugar seguro &nbsp; ☐ Tiempo de espera configurado &nbsp; ☐ Flujo publicado</p></div>
+  </div>
+</section>
+
+<!-- ═════════════ 8. CONEXIÓN RÁPIDA ═════════════ -->
+<section class="sec s-fast" id="rapida">
+  <div class="wrap">
+    <h2><span class="num">8</span> Conexión rápida <small style="font-size:1rem;color:var(--muted)">(usuarios avanzados)</small></h2>
+    <p class="lead">Si ya sabes lo que haces: lo mínimo para conectar, sin explicaciones.</p>
+
+    <h3>8.1 Tabla resumen</h3>
+    <div class="tablewrap"><table>
+      <tr><th>Plataforma</th><th>URL</th><th>Autenticación</th><th>Respuesta</th></tr>
+      <tr><td style="color:var(--n8n);font-weight:700">n8n</td><td><code class="i">https://HOST/webhook/RUTA</code></td><td>Header / Basic / JWT / none</td><td>Respond to Webhook → <code class="i">{"output":"…"}</code></td></tr>
+      <tr><td style="color:var(--flux);font-weight:700">Fluxion8n</td><td>La que muestra el nodo Webhook (prod.)</td><td>Igual que n8n</td><td>Igual que n8n</td></tr>
+      <tr><td style="color:var(--pa);font-weight:700">Power Automate</td><td>HTTP POST URL del disparador (lleva <code class="i">sig=</code>)</td><td>Firma en la URL, o Bearer Entra ID</td><td>Acción Response → <code class="i">{"output":"…"}</code></td></tr>
+      <tr><td style="color:var(--cs);font-weight:700">Copilot Studio</td><td>Token Endpoint → Direct Line v3</td><td>Bearer (token de Direct Line)</td><td>Asíncrona: leer <code class="i">activities</code></td></tr>
+    </table></div>
+
+    <h3>8.2 Pasos mínimos</h3>
+    <ol class="steps">
+      <li>Crea el disparador (Webhook / HTTP request) y <strong>publica</strong> el flujo.</li>
+      <li>Copia la <strong>URL de producción</strong> y configura la autenticación.</li>
+      <li>Responde con <code class="i">{"output":"…"}</code>.</li>
+      <li>Prueba con <code class="i">curl</code>; cuando devuelva 200 y el JSON, pégalo en la app y usa su botón «Probar conexión».</li>
+    </ol>
+
+    <h3>8.3 Plantillas de prueba (copiar y pegar)</h3>
+    <div class="codebox"><div class="codebar"><span class="lang">bash · n8n / Fluxion8n con cabecera</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="bash">curl -sS -X POST "https://HOST/webhook/RUTA" \
+  -H "Content-Type: application/json" -H "X-Api-Key: CLAVE" \
+  -d '{"action":"sendMessage","sessionId":"t1","chatInput":"ping","test":true}'</pre></div>
+    <div class="codebox"><div class="codebar"><span class="lang">bash · n8n con Basic auth</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="bash"># -u usuario:clave → curl construye la cabecera Authorization: Basic por ti
+curl -sS -X POST "https://HOST/webhook/RUTA" -u "USUARIO:CLAVE" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"sendMessage","sessionId":"t1","chatInput":"ping","test":true}'</pre></div>
+    <div class="codebox"><div class="codebar"><span class="lang">bash · n8n con JWT</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="bash">curl -sS -X POST "https://HOST/webhook/RUTA" \
+  -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN_JWT" \
+  -d '{"action":"sendMessage","sessionId":"t1","chatInput":"ping","test":true}'</pre></div>
+    <div class="codebox"><div class="codebar"><span class="lang">bash · Power Automate (clave en la URL)</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="bash">curl -sS -X POST "URL_COMPLETA_DEL_DISPARADOR" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"sendMessage","sessionId":"t1","chatInput":"ping","test":true}'</pre></div>
+
+    <h3>8.4 Ejemplo en código (Node.js 18+)</h3>
+    <div class="codebox"><div class="codebar"><span class="lang">js · llamada desde un servidor</span><button type="button">Copiar</button></div>
+<pre class="code" data-lang="js">// Función reutilizable: manda un mensaje a un flujo y devuelve el texto de la respuesta.
+async function preguntarAlFlujo(url, clave, texto, sessionId) {
+  // AbortSignal.timeout corta la espera si el flujo tarda demasiado (120 s aquí).
+  const respuesta = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Api-Key": clave },
+    body: JSON.stringify({ action: "sendMessage", sessionId, chatInput: texto }),
+    signal: AbortSignal.timeout(120_000),
+  });
+  // Cualquier código que no sea 2xx es un fallo del flujo o de la autenticación.
+  if (!respuesta.ok) throw new Error("El flujo respondió " + respuesta.status);
+  const datos = await respuesta.json();
+  // n8n con "All Entries" devuelve una lista; con Respond to Webhook, un objeto.
+  const primero = Array.isArray(datos) ? datos[0] : datos;
+  return primero.output ?? primero.reply ?? primero.text ?? "";
+}
+
+// Uso (la clave se lee del entorno, nunca se escribe en el código):
+const texto = await preguntarAlFlujo(process.env.FLUJO_URL, process.env.FLUJO_CLAVE, "Hola", "s1");
+console.log(texto);</pre></div>
+  </div>
+</section>
+
+<!-- ═════════════ 9. PROBLEMAS ═════════════ -->
+<section class="sec s-gen" id="problemas">
+  <div class="wrap">
+    <h2><span class="num">9</span> Solución de problemas</h2>
+    <div class="tablewrap"><table>
+      <tr><th>Síntoma</th><th>Causa probable</th><th>Qué hacer</th></tr>
+      <tr><td><code class="i">404 Not Found</code></td><td>URL de prueba usada en producción, flujo sin publicar o ruta mal escrita.</td><td>Usa la URL de producción y activa el flujo.</td></tr>
+      <tr><td><code class="i">401 / 403</code></td><td>Cabecera ausente o con valor incorrecto; IP fuera de la lista.</td><td>Revisa nombre y valor de la cabecera; revisa la lista de IP.</td></tr>
+      <tr><td><code class="i">405 Method Not Allowed</code></td><td>El Webhook espera otro método (p. ej. GET).</td><td>Haz coincidir el método con el del nodo (POST).</td></tr>
+      <tr><td><code class="i">500</code></td><td>El flujo falló antes de responder.</td><td>Mira la pestaña <em>Executions</em> y el nodo con error.</td></tr>
+      <tr><td>200 pero «Workflow got started» / mensaje genérico</td><td><kbd>Respond</kbd> en «Immediately», o el flujo terminó sin pasar por Respond to Webhook.</td><td>Cambia a «Using Respond to Webhook» y comprueba que ese nodo se ejecuta en todas las ramas.</td></tr>
+      <tr><td>Respuesta vacía o sin <code class="i">output</code></td><td>El último nodo no produce esa clave.</td><td>Construye la respuesta explícitamente (sección 2.6).</td></tr>
+      <tr><td>Tarda y falla por tiempo</td><td>La IA es lenta o el límite de espera es corto.</td><td>Sube el tiempo de espera; en Power Automate, simplifica el flujo.</td></tr>
+      <tr><td>Error de red / «dirección no permitida»</td><td>URL privada bloqueada (SSRF, navegador o contenido mixto).</td><td>Usa una URL pública con HTTPS, o revisa las secciones 1.5 y 3.3.</td></tr>
+      <tr><td>Error CORS en el navegador</td><td>El origen de tu web no está permitido.</td><td>Ajusta <em>Allowed Origins (CORS)</em>, o llama desde un servidor.</td></tr>
+      <tr><td>Funcionó una vez y dejó de funcionar</td><td>Era la URL de prueba.</td><td>Cambia a la de producción.</td></tr>
+    </table></div>
+    <div class="callout tip"><b class="t">Método de diagnóstico</b><p>1) Prueba con <code class="i">curl</code> fuera de tu aplicación. 2) Si <code class="i">curl</code> funciona, el problema está en la configuración de la app. 3) Si no, está en el flujo o en la red.</p></div>
+  </div>
+</section>
+
+<!-- ═════════════ 10. GLOSARIO ═════════════ -->
+<section class="sec s-gl" id="glosario">
+  <div class="wrap">
+    <h2><span class="num">10</span> Glosario de definiciones</h2>
+    <dl class="gloss">
+      <dt>Agente (de IA)</dt><dd>Programa que, además de responder, decide qué herramientas usar para cumplir una tarea.</dd>
+      <dt>API</dt><dd>Forma que ofrece un programa para que otros programas le pidan cosas.</dd>
+      <dt>Autenticación</dt><dd>Demostrar quién eres antes de que te dejen entrar (clave, usuario y contraseña, token).</dd>
+      <dt>Basic auth</dt><dd>Autenticación con usuario y contraseña codificados en una cabecera <code class="i">Authorization: Basic …</code>.</dd>
+      <dt>Bearer (portador)</dt><dd>Cabecera <code class="i">Authorization: Bearer TOKEN</code>: quien lleva el token tiene acceso.</dd>
+      <dt>Cabecera (header)</dt><dd>Dato extra que acompaña a una petición HTTP (tipo de contenido, clave…).</dd>
+      <dt>Canal</dt><dd>Vía por la que se habla con un agente (web, móvil, Direct Line…).</dd>
+      <dt>Contrato</dt><dd>Acuerdo sobre qué JSON se envía y qué JSON se recibe.</dd>
+      <dt>CORS</dt><dd>Regla del navegador que decide si una web puede llamar a otro dominio.</dd>
+      <dt>curl</dt><dd>Programa de línea de comandos para hacer peticiones HTTP; ideal para probar.</dd>
+      <dt>Direct Line</dt><dd>API de Microsoft para conversar con un agente desde tu propio programa.</dd>
+      <dt>Disparador (trigger)</dt><dd>Primer nodo de un flujo: lo que lo pone en marcha (un webhook, un horario…).</dd>
+      <dt>Endpoint</dt><dd>Dirección concreta a la que se hace una petición.</dd>
+      <dt>Entra ID</dt><dd>Servicio de identidad de Microsoft (antes Azure Active Directory).</dd>
+      <dt>Flujo (workflow)</dt><dd>Cadena de pasos automatizados.</dd>
+      <dt>Header auth</dt><dd>Autenticación mediante una cabecera personalizada con un valor secreto.</dd>
+      <dt>HTTP / HTTPS</dt><dd>Protocolo de la web; HTTPS añade cifrado.</dd>
+      <dt>JSON</dt><dd>Formato de texto para intercambiar datos: <code class="i">{ "clave": "valor" }</code>.</dd>
+      <dt>JWT</dt><dd>Token firmado que contiene datos y caduca; sirve para autenticar.</dd>
+      <dt>Nodo</dt><dd>Un paso del flujo (disparador, IA, correo, respuesta…).</dd>
+      <dt>Payload</dt><dd>El contenido útil de una petición o respuesta (el JSON).</dd>
+      <dt>Path (ruta)</dt><dd>Parte final de la URL que identifica un webhook concreto.</dd>
+      <dt>Petición / respuesta</dt><dd>Mensaje que envía quien llama / mensaje que devuelve quien contesta.</dd>
+      <dt>SAS (firma)</dt><dd>Clave incrustada en una URL que da acceso a quien la tenga (Power Automate: <code class="i">sig=</code>).</dd>
+      <dt>sessionId</dt><dd>Identificador de una conversación para que el flujo sepa de cuál se trata.</dd>
+      <dt>SSRF</dt><dd>Ataque que engaña a un servidor para que llame a recursos internos que no debería.</dd>
+      <dt>Streaming</dt><dd>Respuesta que llega por trozos mientras se genera.</dd>
+      <dt>Timeout (tiempo de espera)</dt><dd>Máximo que se espera una respuesta antes de dar la llamada por fallida.</dd>
+      <dt>Token</dt><dd>Cadena temporal que sustituye a una contraseña para una sesión.</dd>
+      <dt>URL de prueba / de producción</dt><dd>Direcciones del webhook para construir/depurar y para uso real, respectivamente.</dd>
+      <dt>Webhook</dt><dd>Dirección que escucha peticiones de otras aplicaciones y pone en marcha un flujo.</dd>
+    </dl>
+  </div>
+</section>
+
+</main>
+
+<footer class="end">
+  <div class="wrap">Manual de conexión con aplicaciones de flujos · versión 1.0 · 12 de octubre de 2026<br>
+  Contenido de n8n contrastado con el corpus de documentación del repositorio; Power Automate y Copilot Studio marcados como «Sin verificar».</div>
+</footer>
+
+<script>
+/* Resaltado de código sin dependencias externas: funciona abriendo el archivo con doble clic. */
+(function () {
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  var RULES = {
+    js: /(\/\/[^\n]*)|("(?:\\.|[^"\\\n])*"(?=\s*:))|("(?:\\.|[^"\\\n])*")|('(?:\\.|[^'\\\n])*')|(\b(?:true|false|null|undefined)\b)|(\b-?\d[\d_]*(?:\.\d+)?\b)|(\b(?:const|let|var|function|return|if|else|await|async|new|throw|for|of)\b)/g,
+    bash: /(#[^\n]*)|("(?:\\.|[^"\\])*")|('(?:\\.|[^'\\])*')|(\$\{?[A-Za-z_][A-Za-z0-9_]*\}?)|(\s--?[A-Za-z][\w-]*)|(^|\n)(curl|openssl|export)\b|(\b[A-Z][A-Z0-9_]{3,}=)/g
+  };
+  function hlJs(src) {
+    return esc(src).replace(RULES.js, function (m, com, key, str, str2, kw, num, kw2) {
+      if (com) return '<span class="com">' + com + '</span>';
+      if (key) return '<span class="key">' + key + '</span>';
+      if (str || str2) return '<span class="str">' + m + '</span>';
+      if (kw) return '<span class="kw">' + m + '</span>';
+      if (num) return '<span class="num">' + m + '</span>';
+      if (kw2) return '<span class="kw">' + m + '</span>';
+      return m;
+    });
+  }
+  function hlBash(src) {
+    return esc(src).replace(RULES.bash, function (m, com, str, str2, v, flag, nl, cmd, assign) {
+      if (com) return '<span class="com">' + com + '</span>';
+      if (str || str2) return '<span class="str">' + m + '</span>';
+      if (v) return '<span class="var">' + m + '</span>';
+      if (flag) return m.charAt(0) + '<span class="flag">' + m.slice(1) + '</span>';
+      if (cmd) return nl + '<span class="cmd">' + cmd + '</span>';
+      if (assign) return '<span class="var">' + m + '</span>';
+      return m;
+    });
+  }
+  var blocks = document.querySelectorAll("pre.code");
+  for (var i = 0; i < blocks.length; i++) {
+    var pre = blocks[i];
+    var raw = pre.textContent;
+    pre.setAttribute("data-raw", raw);
+    var lang = pre.getAttribute("data-lang");
+    pre.innerHTML = lang === "bash" ? hlBash(raw) : hlJs(raw);
+  }
+  var buttons = document.querySelectorAll(".codebar button");
+  Array.prototype.forEach.call(buttons, function (btn) {
+    btn.addEventListener("click", function () {
+      var pre = btn.closest(".codebox").querySelector("pre.code");
+      var text = pre.getAttribute("data-raw");
+      if (pre.getAttribute("data-strip")) {
+        // Quita los comentarios // (no las URLs: ahí hay un ":" justo antes) y las líneas que quedan vacías.
+        text = text.replace(/(^|[ \t])\/\/[^\n]*/g, "$1").split("\n").filter(function (l, idx, arr) { return l.trim() !== "" || idx === 0 && false; }).join("\n");
+        text = text.replace(/[ \t]+$/gm, "");
+      }
+      var done = function () { var t = btn.textContent; btn.textContent = "¡Copiado!"; setTimeout(function () { btn.textContent = t; }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, function () {}); }
+      else { var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (e) {} document.body.removeChild(ta); }
+    });
+  });
+})();
+</script>
+</body>
+</html>

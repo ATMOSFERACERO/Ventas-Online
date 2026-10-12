@@ -1,5 +1,7 @@
 import { Route, Routes } from 'react-router-dom'
+import AsistenteChat from './components/AsistenteChat'
 import Header from './components/Header'
+import Ajustes from './pages/Ajustes'
 import Detalle from './pages/Detalle'
 import Favoritos from './pages/Favoritos'
 import Home from './pages/Home'
@@ -15,9 +17,11 @@ export default function App() {
           <Route path="/anuncio/:id" element={<Detalle />} />
           <Route path="/vender" element={<Vender />} />
           <Route path="/favoritos" element={<Favoritos />} />
+          <Route path="/ajustes" element={<Ajustes />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </main>
+      <AsistenteChat />
       <footer className="py-8 text-center text-xs text-slate-500">Prototipo de demostración · datos guardados en tu navegador</footer>
     </>
   )

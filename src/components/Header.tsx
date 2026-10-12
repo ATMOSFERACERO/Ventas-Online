@@ -12,6 +12,7 @@ export default function Header() {
         <nav className="flex items-center gap-1">
           <NavLink to="/" end className={link}>Explorar</NavLink>
           <NavLink to="/favoritos" className={link}>Favoritos ({favoritos.length})</NavLink>
+          <NavLink to="/ajustes" className={link}>Ajustes</NavLink>
           <Link to="/vender" className="btn ml-2 !py-1.5 text-sm">Vender</Link>
         </nav>
       </div>

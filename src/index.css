@@ -10,3 +10,11 @@
 }
 
 body { @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100; }
+
+@layer components {
+  .btn-danger { @apply inline-flex items-center justify-center rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 transition hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950; }
+  .btn-sm { @apply !px-3 !py-1.5 text-sm; }
+  .btn:disabled, .btn-ghost:disabled { @apply cursor-not-allowed opacity-50; }
+  .tarjeta { @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800; }
+  .tarjeta-activa { @apply !border-brand ring-2 ring-brand/30; }
+}
